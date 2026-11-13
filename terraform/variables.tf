@@ -8,5 +8,5 @@ variable "project" {
 }
 variable "enable_guardduty" {
   type    = bool
-  default = true
+  default = false
 }
