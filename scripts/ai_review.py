@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
-"""Advisory AI review of Checkov findings + Terraform plan. Never fails the
-build."""
+"""Advisory AI review of Checkov findings + Terraform plan. Never fails the build."""
 import json
 import os
 import sys
+import time
+import urllib.error
 import urllib.request
+
 MODEL = os.environ.get("AI_MODEL", "gemini-flash-latest")
 LIMIT = 20000
-
-
+ATTEMPTS = 4
+RETRY_CODES = (429, 500, 502, 503, 504)
 
 
 def checkov_findings(path):
     try:
-         with open(path, encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
     except Exception as exc:
         return [], f"could not read Checkov report ({exc})"
@@ -21,11 +23,8 @@ def checkov_findings(path):
     failed = []
     for rep in reports:
         failed += rep.get("results", {}).get("failed_checks", [])
-    lines = [f"- {c['check_id']} {c['check_name']} | {c['resource']} |{c['file_path']}" 
-             for c in failed]
+    lines = [f"- {c['check_id']} {c['check_name']} | {c['resource']} | {c['file_path']}" for c in failed]
     return lines, None
-
-
 
 
 def read_text(path):
@@ -36,8 +35,6 @@ def read_text(path):
         return f"(could not read {path}: {exc})"
 
 
-
-
 def ask_llm(prompt):
     key = os.environ.get("GEMINI_API_KEY", "")
     if not key or key == "skip":
@@ -45,26 +42,34 @@ def ask_llm(prompt):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
     body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode()
     headers = {"Content-Type": "application/json", "x-goog-api-key": key}
-    req = urllib.request.Request(url, data=body, headers=headers)
+    last_error = "unknown error"
+    tries = 0
+    for attempt in range(1, ATTEMPTS + 1):
+        tries = attempt
+        req = urllib.request.Request(url, data=body, headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=90) as resp:
+                return json.load(resp)["candidates"][0]["content"]["parts"][0]["text"]
+        except urllib.error.HTTPError as exc:
+            last_error = f"HTTP Error {exc.code}: {exc.reason}"
+            if exc.code not in RETRY_CODES:
+                break
+        except Exception as exc:
+            last_error = str(exc)
+        if attempt < ATTEMPTS:
+            wait = 10 * attempt
+            print(f"AI call failed ({last_error}); retry {attempt}/{ATTEMPTS - 1} in {wait}s")
+            time.sleep(wait)
+    return f"_AI review unavailable after {tries} attempt(s): {last_error}_"
 
-    try:
-        with urllib.request.urlopen(req, timeout=90) as resp:
-             return json.load(resp)["candidates"][0]["content"]["parts"][0]["text"]
-    except Exception as exc:
-        return f"_AI review unavailable: {exc}_"
 
 def main():
     checkov_path, plan_path, out_path = sys.argv[1:4]
     lines, err = checkov_findings(checkov_path)
     findings = chr(10).join(lines)[:LIMIT] or "none"
     plan = read_text(plan_path)
-    prompt = f'''You are a senior cloud security engineer reviewing a
-Terraform change before it is deployed to AWS.
-Self-Defending AWS Stack: Defense in Depth with Terraform, Jenkins, Prometheus, Grafana and AI
-Reply in Markdown with exactly three sections: "## Change summary" (plain
-English: what is created, changed, destroyed), "## Top risks" (max 5, ranked,
-each naming the resource and a concrete Terraform fix), "## Verdict" (APPLY
-or HOLD, with one sentence why).
+    prompt = f'''You are a senior cloud security engineer reviewing a Terraform change before it is deployed to AWS.
+Reply in Markdown with exactly three sections: "## Change summary" (plain English: what is created, changed, destroyed), "## Top risks" (max 5, ranked, each naming the resource and a concrete Terraform fix), "## Verdict" (APPLY or HOLD, with one sentence why).
 Be concise. This review is advisory and a human approves the change.
 
 Checkov failed checks:
@@ -79,5 +84,6 @@ Terraform plan:
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(header + answer + chr(10))
     print(f"Wrote {out_path}")
+
 
 main()
