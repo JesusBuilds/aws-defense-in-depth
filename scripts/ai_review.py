@@ -5,7 +5,7 @@ import json
 import os
 import sys
 import urllib.request
-MODEL = os.environ.get("AI_MODEL", "gemini-2.5-flash")
+MODEL = os.environ.get("AI_MODEL", "gemini-flash-latest")
 LIMIT = 20000
 
 
