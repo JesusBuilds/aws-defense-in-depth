@@ -1,6 +1,6 @@
 resource "aws_cloudwatch_log_group" "flow" {
   name              = "/${var.project}/vpc-flow-logs"
-  retention_in_days = 14
+  retention_in_days = 365
 }
 resource "aws_iam_role" "flow" {
   name = "${var.project}-flow-logs"

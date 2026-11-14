@@ -13,6 +13,8 @@ resource "aws_instance" "web" {
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.web.id]
   iam_instance_profile        = aws_iam_instance_profile.web.name
+  monitoring                  = true
+  ebs_optimized               = true
   user_data                   = file("${path.module}/templates/web_userdata.sh")
   user_data_replace_on_change = true
   metadata_options {
@@ -33,6 +35,8 @@ resource "aws_instance" "monitor" {
   subnet_id              = aws_subnet.private.id
   vpc_security_group_ids = [aws_security_group.monitor.id]
   iam_instance_profile   = aws_iam_instance_profile.monitor.name
+  monitoring             = true
+  ebs_optimized          = true
 
 
   user_data = templatefile("${path.module}/templates/monitor_userdata.sh.tftpl", {
