@@ -202,7 +202,7 @@ I fixed the cheap, real findings through the same pipeline: detailed monitoring 
 
 | Before: 139 passed, 13 failed | After: 144 passed, 8 failed |
 |---|---|
-| ![Checkov-before](docs/screenshots/failed-checks.png) | ![Checkov after](docs/screenshots/checkov-after.png) |
+| ![Checkov before](docs/screenshots/failed checks.png) | ![Checkov after](docs/screenshots/checkov-after.png) |
 
 The remaining 8 are deliberate and documented:
 
