@@ -102,6 +102,7 @@ Terraform state lives in a versioned, private S3 bucket with native state lockin
 A custom Jenkins image bakes in Terraform, Checkov, gitleaks and the AWS CLI so every build uses the same pinned tools. The job reads the `Jenkinsfile` from this repository, so the pipeline is versioned with the code it deploys.
 
 ![Jenkins container running](docs/screenshots/jenkins-docker-running.png)
+
 *Jenkins container started with Docker Compose.*
 
 ![Jenkins credentials](docs/screenshots/jenkins-key-ids.png)
