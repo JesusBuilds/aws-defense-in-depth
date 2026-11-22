@@ -392,3 +392,8 @@ Both AWS queries should print `[]`. Finally, delete or deactivate the access key
 A same-day run costs about $1-2, almost all of it the NAT gateway. Leaving the stack up costs roughly $1 a day for the NAT gateway alone, so tear it down when you finish. One command destroys everything.
 
 ---
+## Author
+
+Built by **[Jesus Pujols](https://www.linkedin.com/in/jesus-pujols)**
+
+
