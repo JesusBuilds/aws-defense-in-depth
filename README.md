@@ -129,9 +129,11 @@ A custom Jenkins image bakes in Terraform, Checkov, gitleaks and the AWS CLI so 
 The AI recommended **HOLD** because it repeated a false positive: Checkov flagged RDP port 3389 as open, but that finding comes from the ephemeral return-traffic range (1024-65535) in the NACLs, which happens to include 3389. Nothing listens on RDP. I reviewed the plan, overrode the verdict, and approved. That is exactly why the pipeline keeps a **human approval gate**.
 
 ![Approval gate](docs/screenshots/approval.png)
+
 *Manual approval: nothing changes in AWS until a human clicks Proceed.*
 
 ![Pipeline run](docs/screenshots/green-run.png)
+
 *A complete green run (build #13): every stage passed, including the smoke test.*
 
 ### 4. Deployed infrastructure
@@ -139,9 +141,11 @@ The AI recommended **HOLD** because it repeated a false positive: Checkov flagge
 After approval, Terraform applies the plan and a smoke test curls the new web server before the build can pass.
 
 ![Terraform outputs](docs/screenshots/outputs.png)
+
 *Terraform outputs: web IP, instance IDs and the name of the SSM parameter holding the Grafana password (not the password itself).*
 
 ![Web page](docs/screenshots/Screenshot.png)
+
 *The web tier serving over HTTP, deployed end to end by the pipeline.*
 
 ### 5. Private monitoring, reached through SSM
@@ -149,12 +153,15 @@ After approval, Terraform applies the plan and a smoke test curls the new web se
 The monitoring host sits in the private subnet with **no inbound rules at all**. I reach Grafana and Prometheus through an SSM port-forwarding tunnel, so there is no open listener, bastion or SSH key, and access requires an IAM identity and is logged.
 
 ![SSM tunnel](docs/screenshots/prometheus-tunnel.png)
+
 *SSM port-forward to the private monitor host.*
 
 ![Grafana dashboard](docs/screenshots/grafana-dashboard.png)
+
 *Node Exporter dashboard showing live CPU, memory, network and disk for the web host.*
 
 ![Prometheus targets](docs/screenshots/green-endpoimts.png)
+
 *Prometheus targets: node exporter, blackbox HTTP probe and Prometheus itself, all UP.*
 
 ### 6. Proving the defenses work
@@ -162,25 +169,31 @@ The monitoring host sits in the private subnet with **no inbound rules at all**.
 **Closed ports.** From the internet, only HTTP answers. SSH (22) and the metrics port (9100) time out because the firewall silently drops the packets.
 
 ![Port tests](docs/screenshots/port-tests.png)
+
 *Port 80 returns True. Ports 22 and 9100 return False.*
 
 **The network saw it.** VPC Flow Logs recorded every blocked connection. Within an hour of going online, automated internet scanners were already probing SSH on the web server, and every attempt was rejected.
 
 ![Flow log rejects](docs/screenshots/flow-log-query-reject-port-22-alerts.png)
+
 *CloudWatch Logs Insights: 18 rejected port-22 attempts in one hour.*
 
 **Detection and recovery.** I simulated an outage by stopping the web container through SSM, with no SSH. Prometheus caught it through the blackbox probe and fired the alert.
 
 ![Stopping the web server](docs/screenshots/breaking-web-server.png)
+
 *Stopping the web container remotely through SSM.*
 
 ![Alert firing](docs/screenshots/alert-firing.png)
+
 *`WebEndpointDown` in the FIRING state: `probe_success == 0`.*
 
 ![Restarting the web server](docs/screenshots/bringing-server-back-up.png)
+
 *Bringing the web server back up.*
 
 ![Alert resolved](docs/screenshots/back-online.png)
+
 *All alert rules back to normal. The alert cleared on its own.*
 
 ### 7. Shift-left results
@@ -206,6 +219,7 @@ The remaining 8 are deliberate and documented:
 Everything is destroyed with one command, so the project costs almost nothing to demonstrate.
 
 ![Destroy complete](docs/screenshots/destruction.png)
+
 *`Destroy complete! Resources: 47 destroyed.`*
 
 ## Challenges and fixes
