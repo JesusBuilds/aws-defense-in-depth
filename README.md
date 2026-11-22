@@ -118,7 +118,7 @@ A custom Jenkins image bakes in Terraform, Checkov, gitleaks and the AWS CLI so 
 
 **Checkov** scans the Terraform before anything is planned. The first scan passed 139 checks and failed 13. I triaged them instead of chasing zero: some are real improvements, some are deliberate trade-offs for a lab, and some are false positives (see the AI review below).
 
-![Checkov findings](docs/screenshots/failed checks.png)
+![Checkov findings](docs/screenshots/failed-checks.png)
 *First scan: 139 passed, 13 failed.*
 
 **AI review.** A Python script sends the Checkov findings and the Terraform plan (never state files or credentials) to a Gemini model. It returns a change summary, ranked risks and an APPLY/HOLD verdict. It is advisory only, retries on rate limits and timeouts, and never fails the build.
@@ -202,7 +202,7 @@ I fixed the cheap, real findings through the same pipeline: detailed monitoring 
 
 | Before: 139 passed, 13 failed | After: 144 passed, 8 failed |
 |---|---|
-| ![Checkov before](docs/screenshots/failed checks.png) | ![Checkov after](docs/screenshots/checkov-after.png) |
+| ![Checkov before](docs/screenshots/failed-checks.png) | ![Checkov after](docs/screenshots/checkov-after.png) |
 
 The remaining 8 are deliberate and documented:
 
