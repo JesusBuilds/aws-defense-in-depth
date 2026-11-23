@@ -10,9 +10,13 @@
 
 > A small AWS environment that is deployed **only** through a gated Jenkins pipeline. Every change is secret-scanned, security-scanned, planned, reviewed by an AI model, approved by a human, applied, and smoke-tested. Each security layer has a control **and** a test that proves it works.
 
+## Architecture
+
+![AWS Defense in Depth Architecture](docs/screenshots/Defenseindepth.draw.io)
+
 ## Contents
 
-[Overview](#overview) · [Architecture](#architecture) · [Defense-in-depth layers](#defense-in-depth-layers) · [Tech stack](#tech-stack) · [Walkthrough](#walkthrough) · [Challenges and fixes](#challenges-and-fixes) · [Skills demonstrated](#skills-demonstrated) · [Setup guide](#setup-guide) · [Limitations and next steps](#limitations-and-next-steps) · [Cost and cleanup](#cost-and-cleanup)
+[Overview](#overview)  · [Defense-in-depth layers](#defense-in-depth-layers) · [Tech stack](#tech-stack) · [Walkthrough](#walkthrough) · [Challenges and fixes](#challenges-and-fixes) · [Skills demonstrated](#skills-demonstrated) · [Setup guide](#setup-guide) · [Limitations and next steps](#limitations-and-next-steps) · [Cost and cleanup](#cost-and-cleanup)
 
 ## Overview
 
@@ -37,10 +41,6 @@ Most "defense in depth" demos stop at a diagram. This project builds the whole t
 | SSH keys or bastion hosts | 0 (SSM Session Manager only) |
 | Blocked probes caught in flow logs | 18 rejected port-22 attempts in a one-hour window |
 | Outage detection | Prometheus alert fired about 2 minutes after a simulated failure |
-
-## Architecture
-
-
 
 ## Defense-in-depth layers
 
